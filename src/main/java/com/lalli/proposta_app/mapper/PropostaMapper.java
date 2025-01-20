@@ -36,6 +36,7 @@ public interface PropostaMapper {
 
     List<PropostaResponseDTO> convertListEntityToListDto(Iterable<Proposta> propostas);
 
+
     default String setValorSolicitadoFmt(Proposta proposta){
         return NumberFormat.getCurrencyInstance().format(proposta.getValorSolicitado());
     }
