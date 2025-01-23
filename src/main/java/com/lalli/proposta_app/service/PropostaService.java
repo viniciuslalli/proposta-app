@@ -5,8 +5,6 @@ import com.lalli.proposta_app.dto.PropostaResponseDTO;
 import com.lalli.proposta_app.entity.Proposta;
 import com.lalli.proposta_app.mapper.PropostaMapper;
 import com.lalli.proposta_app.repository.PropostaRepository;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -33,11 +31,23 @@ public class PropostaService {
         Proposta proposta = PropostaMapper.INSTANCE.convertDtoToProposta(requestDTO);
         propostaRepository.save(proposta);
 
-        PropostaResponseDTO response = PropostaMapper.INSTANCE.convertEntityToDto(proposta);
-        notificarRabbitMQService.notificar(response, exchange);
+        notificarRabbitMQ(proposta);
 
-        return response;
+        notificarRabbitMQService.notificar(proposta, exchange);
+
+        return PropostaMapper.INSTANCE.convertEntityToDto(proposta);
     }
+
+    private void notificarRabbitMQ(Proposta proposta) {
+        try {
+            notificarRabbitMQService.notificar(proposta, exchange);
+        } catch (RuntimeException e) {
+            // Caso houver indisponibilidade do serviço de mensageria, a proposta não será integrada
+            proposta.setIntegrada(false);
+            propostaRepository.save(proposta);
+        }
+    }
+
 
     public List<PropostaResponseDTO> obterProposta() {
        return  PropostaMapper.INSTANCE.convertListEntityToListDto(propostaRepository.findAll());
