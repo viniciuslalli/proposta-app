@@ -15,15 +15,15 @@ public class PropostaService {
 
     private PropostaRepository propostaRepository;
 
-    private NotificarRabbitMQService notificarRabbitMQService;
+    private NotificacoRabbitService notificacoRabbitService;
 
     private String exchange;
 
     public PropostaService(PropostaRepository propostaRepository,
-                           NotificarRabbitMQService notificarRabbitMQService,
+                           NotificacoRabbitService notificacoRabbitService,
                            @Value("${rabbitmq.propostapendente.exchange}") String exchange) {
         this.propostaRepository = propostaRepository;
-        this.notificarRabbitMQService = notificarRabbitMQService;
+        this.notificacoRabbitService = notificacoRabbitService;
         this.exchange = exchange;
     }
 
@@ -33,14 +33,14 @@ public class PropostaService {
 
         notificarRabbitMQ(proposta);
 
-        notificarRabbitMQService.notificar(proposta, exchange);
+        notificacoRabbitService.notificar(proposta, exchange);
 
         return PropostaMapper.INSTANCE.convertEntityToDto(proposta);
     }
 
     private void notificarRabbitMQ(Proposta proposta) {
         try {
-            notificarRabbitMQService.notificar(proposta, exchange);
+            notificacoRabbitService.notificar(proposta, exchange);
         } catch (RuntimeException e) {
             // Caso houver indisponibilidade do serviço de mensageria, a proposta não será integrada
             proposta.setIntegrada(false);
