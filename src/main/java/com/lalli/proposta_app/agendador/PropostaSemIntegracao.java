@@ -2,7 +2,7 @@ package com.lalli.proposta_app.agendador;
 
 import com.lalli.proposta_app.entity.Proposta;
 import com.lalli.proposta_app.repository.PropostaRepository;
-import com.lalli.proposta_app.service.NotificacoRabbitService;
+import com.lalli.proposta_app.service.NotificacaoRabbitService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,17 +16,17 @@ public class PropostaSemIntegracao {
 
     private final PropostaRepository propostaRepository;
 
-    private final NotificacoRabbitService notificacoRabbitService;
+    private final NotificacaoRabbitService notificacaoRabbitService;
 
     private final String exchange;
 
     private final Logger logger  = LoggerFactory.getLogger(PropostaSemIntegracao.class);
 
     public PropostaSemIntegracao(PropostaRepository propostaRepository,
-                                 NotificacoRabbitService notificacoRabbitService,
+                                 NotificacaoRabbitService notificacaoRabbitService,
                                  @Value("${rabbitmq.propostapendente.exchange}") String exchange) {
         this.propostaRepository = propostaRepository;
-        this.notificacoRabbitService = notificacoRabbitService;
+        this.notificacaoRabbitService = notificacaoRabbitService;
         this.exchange = exchange;
     }
 
@@ -34,7 +34,7 @@ public class PropostaSemIntegracao {
     public void buscarPropostaSemIntegracao() {
         propostaRepository.findAllByIntegradaIsFalse().forEach(proposta -> {
             try {
-                notificacoRabbitService.notificar(proposta, exchange);
+                notificacaoRabbitService.notificar(proposta, exchange);
                 atualizarProposta(proposta);
             } catch (RuntimeException ex){
                 logger.error(ex.getMessage());

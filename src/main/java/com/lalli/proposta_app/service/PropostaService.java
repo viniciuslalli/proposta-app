@@ -15,41 +15,37 @@ public class PropostaService {
 
     private PropostaRepository propostaRepository;
 
-    private NotificacoRabbitService notificacoRabbitService;
+    private NotificacaoRabbitService notificacaoRabbitService;
 
     private String exchange;
 
     public PropostaService(PropostaRepository propostaRepository,
-                           NotificacoRabbitService notificacoRabbitService,
+                           NotificacaoRabbitService notificacaoRabbitService,
                            @Value("${rabbitmq.propostapendente.exchange}") String exchange) {
         this.propostaRepository = propostaRepository;
-        this.notificacoRabbitService = notificacoRabbitService;
+        this.notificacaoRabbitService = notificacaoRabbitService;
         this.exchange = exchange;
     }
 
-    public PropostaResponseDTO criar(PropostaRequestDTO requestDTO) {
-        Proposta proposta = PropostaMapper.INSTANCE.convertDtoToProposta(requestDTO);
+    public PropostaResponseDTO criar(PropostaRequestDTO requestDto) {
+        Proposta proposta = PropostaMapper.INSTANCE.convertDtoToProposta(requestDto);
         propostaRepository.save(proposta);
 
         notificarRabbitMQ(proposta);
-
-        notificacoRabbitService.notificar(proposta, exchange);
 
         return PropostaMapper.INSTANCE.convertEntityToDto(proposta);
     }
 
     private void notificarRabbitMQ(Proposta proposta) {
         try {
-            notificacoRabbitService.notificar(proposta, exchange);
-        } catch (RuntimeException e) {
-            // Caso houver indisponibilidade do serviço de mensageria, a proposta não será integrada
+            notificacaoRabbitService.notificar(proposta, exchange);
+        } catch (RuntimeException ex) {
             proposta.setIntegrada(false);
             propostaRepository.save(proposta);
         }
     }
 
-
     public List<PropostaResponseDTO> obterProposta() {
-       return  PropostaMapper.INSTANCE.convertListEntityToListDto(propostaRepository.findAll());
+        return PropostaMapper.INSTANCE.convertListEntityToListDto(propostaRepository.findAll());
     }
 }

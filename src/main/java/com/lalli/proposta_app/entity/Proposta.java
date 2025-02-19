@@ -23,14 +23,12 @@ public class Proposta {
 
     private int prazoPagamento;
 
-    private Boolean aprovado;
+    private Boolean aprovada;
 
     private boolean integrada;
 
     private String observacao;
 
-    //Eu preciso saber qual usuario está vinculado a a essa proposta.
-    //CascadeType persiste usuario antes da proposta em si
     @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "id_usuario")
     @JsonManagedReference

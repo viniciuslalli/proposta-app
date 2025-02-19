@@ -21,23 +21,23 @@ public interface PropostaMapper {
     @Mapping(target = "usuario.telefone", source = "telefone")
     @Mapping(target = "usuario.renda", source = "renda")
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "aprovado", ignore = true)
+    @Mapping(target = "aprovada", ignore = true)
     @Mapping(target = "integrada", constant = "true")
     @Mapping(target = "observacao", ignore = true)
-    Proposta convertDtoToProposta(PropostaRequestDTO requestDTO);
+    Proposta convertDtoToProposta(PropostaRequestDTO propostaRequestDto);
 
-    @Mapping( target = "nome", source = "usuario.nome")
-    @Mapping( target = "sobrenome", source = "usuario.sobrenome")
-    @Mapping( target = "telefone", source = "usuario.telefone")
-    @Mapping( target = "cpf", source = "usuario.cpf")
-    @Mapping( target = "renda", source = "usuario.renda")
-    @Mapping( target = "valorSolicitadoFmt", expression = "java(setValorSolicitadoFmt(proposta))")
+    @Mapping(target = "nome", source = "usuario.nome")
+    @Mapping(target = "sobrenome", source = "usuario.sobrenome")
+    @Mapping(target = "telefone", source = "usuario.telefone")
+    @Mapping(target = "aprovada", source = "aprovada")
+    @Mapping(target = "cpf", source = "usuario.cpf")
+    @Mapping(target = "renda", source = "usuario.renda")
+    @Mapping(target = "valorSolicitadoFmt", expression = "java(setValorSolicitadoFmt(proposta))")
     PropostaResponseDTO convertEntityToDto(Proposta proposta);
 
     List<PropostaResponseDTO> convertListEntityToListDto(Iterable<Proposta> propostas);
 
-
-    default String setValorSolicitadoFmt(Proposta proposta){
+    default String setValorSolicitadoFmt(Proposta proposta) {
         return NumberFormat.getCurrencyInstance().format(proposta.getValorSolicitado());
     }
 }

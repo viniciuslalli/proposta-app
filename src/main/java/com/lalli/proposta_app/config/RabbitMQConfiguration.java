@@ -16,21 +16,26 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfiguration {
 
     @Value("${rabbitmq.propostapendente.exchange}")
-    private String exchange;
+    private String exchangePropostaPendente;
+
+    @Value("${rabbitmq.propostaconcluida.exchange}")
+    private String exchangePropostaConcluida;
 
     @Bean
     public Queue criarFilaPropostaPendenteMsAnaliseCredito() {
-        return QueueBuilder.durable("proposta-pendente.ms-analise-credito").build();
+        return QueueBuilder.durable("proposta-pendente.ms-analise-credito")
+                .build();
     }
+
 
     @Bean
     public Queue criarFilaPropostaPendenteMsNotificacao() {
-        return  QueueBuilder.durable("proposta-pendente.ms-notificacao").build();
+        return QueueBuilder.durable("proposta-pendente.ms-notificacao").build();
     }
 
     @Bean
     public Queue criarFilaPropostaConcluidaMsProposta() {
-        return  QueueBuilder.durable("proposta-concluida.ms-proposta").build();
+        return QueueBuilder.durable("proposta-concluida.ms-proposta").build();
     }
 
     @Bean
@@ -43,39 +48,55 @@ public class RabbitMQConfiguration {
         return new RabbitAdmin(connectionFactory);
     }
 
-    // Para conseguir criar nossas exchanges e filas
     @Bean
     public ApplicationListener<ApplicationReadyEvent> inicializarAdmin(RabbitAdmin rabbitAdmin) {
         return event -> rabbitAdmin.initialize();
     }
 
     @Bean
-    public FanoutExchange criarFanoutExchangePropostaPendente(){
-        return ExchangeBuilder.fanoutExchange(exchange).build();
+    public FanoutExchange criarFanoutExchangePropostaPendente() {
+        return ExchangeBuilder.fanoutExchange(exchangePropostaPendente).build();
     }
 
     @Bean
-    public Binding criarBindingPropostaPendenteMSAnaliseCredito(){
-        return BindingBuilder.bind(criarFilaPropostaPendenteMsAnaliseCredito())
-                .to(criarFanoutExchangePropostaPendente());
+    public FanoutExchange criarFanoutExchangePropostaConcluida() {
+        return ExchangeBuilder.fanoutExchange(exchangePropostaConcluida).build();
     }
 
     @Bean
-    public Binding criarBindingPropostaPendenteMSNotificacao(){
-        return BindingBuilder.bind(criarFilaPropostaPendenteMsNotificacao())
-                .to(criarFanoutExchangePropostaPendente());
+    public Binding criarBindingPropostaPendenteMSAnaliseCredito() {
+        return BindingBuilder.bind(criarFilaPropostaPendenteMsAnaliseCredito()).
+                to(criarFanoutExchangePropostaPendente());
     }
 
     @Bean
-    public MessageConverter jackson2JsonMessageConvertergeConverter(){
+    public Binding criarBindingPropostaPendenteMSNotificacao() {
+        return BindingBuilder.bind(criarFilaPropostaPendenteMsNotificacao()).
+                to(criarFanoutExchangePropostaPendente());
+    }
+
+    @Bean
+    public Binding criarBindingPropostaConcluidaMSPropostaApp() {
+        return BindingBuilder.bind(criarFilaPropostaConcluidaMsProposta()).
+                to(criarFanoutExchangePropostaConcluida());
+    }
+
+    @Bean
+    public Binding criarBindingPropostaConcluidaMSNotificacao() {
+        return BindingBuilder.bind(criarFilaPropostaConcluidaMsNotificacao()).
+                to(criarFanoutExchangePropostaConcluida());
+    }
+
+    @Bean
+    public MessageConverter jackson2JsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory){
-        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+        RabbitTemplate rabbitTemplate = new RabbitTemplate();
         rabbitTemplate.setConnectionFactory(connectionFactory);
-        rabbitTemplate.setMessageConverter(jackson2JsonMessageConvertergeConverter());
+        rabbitTemplate.setMessageConverter(jackson2JsonMessageConverter());
 
         return rabbitTemplate;
     }

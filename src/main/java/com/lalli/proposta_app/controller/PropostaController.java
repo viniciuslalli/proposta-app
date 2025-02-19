@@ -20,18 +20,17 @@ public class PropostaController {
     private PropostaService propostaService;
 
     @PostMapping
-    public ResponseEntity<PropostaResponseDTO> criar(@RequestBody PropostaRequestDTO requestDTO) {
-        PropostaResponseDTO response = propostaService.criar(requestDTO);
+    public ResponseEntity<PropostaResponseDTO> criar(@RequestBody PropostaRequestDTO requestDto) {
+        PropostaResponseDTO response = propostaService.criar(requestDto);
         return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(response.getId())
-                .toUri())
+                        .path("/{id}")
+                        .buildAndExpand(response.getId())
+                        .toUri())
                 .body(response);
     }
 
     @GetMapping
     public ResponseEntity<List<PropostaResponseDTO>> obterProposta() {
-        List<PropostaResponseDTO> propostaResponseDTOS = propostaService.obterProposta();
-        return ResponseEntity.ok(propostaResponseDTOS);
+        return ResponseEntity.ok(propostaService.obterProposta());
     }
 }
