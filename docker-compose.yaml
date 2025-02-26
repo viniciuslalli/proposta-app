@@ -1,0 +1,43 @@
+version: '3.5'
+services:
+  proposta-app:
+    image: proposta-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    depends_on:
+      rabbit-mq:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    entrypoint: ["./wait-for-it.sh", "rabbit-mq:5672", "--", "java", "-Duser.language=pt", "-Duser.country=BR", "-jar", "app.jar"]
+
+  rabbit-mq:
+    image: rabbitmq:3-management
+    hostname: rabbit-mq
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+    ports:
+      - "5672:5672"
+      - "15672:15672" # Interface de gerenciamento do RabbitMQ
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: propostadb
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+    ports:
+      - "5432:5432"
